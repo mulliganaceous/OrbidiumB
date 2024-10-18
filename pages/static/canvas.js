@@ -115,13 +115,17 @@ function render_page(reload)
     const ctx = canvas.getContext("2d");
     ctx.canvas.width  = window.innerWidth;
     ctx.canvas.height = window.innerHeight;
+    var mpc_entry = document.getElementById("mpc_id_name");
 
     const selectElement = document.getElementById('asteroid_type');
     const asteroid_type = selectElement.value;
     if (asteroid_type == 'one')
     {
+        mpc_entry.disabled =false;
         var mpc_id = document.getElementById("mpc_id_name").value;
-        console.log(mpc_id);
+    }
+    else {
+        mpc_entry.disabled = true;
     }
     //setup page - retina screen only!
     if (window.devicePixelRatio > 1) {
@@ -144,6 +148,7 @@ function render_page(reload)
         const xhttp = new XMLHttpRequest();
         xhttp.onload = function() {
             // What to do when the response is ready
+            console.log(this.responseText)
             data = JSON.parse(this.responseText);
             neos = data["pha"]
             mbas = data["mba"]
