@@ -21,6 +21,7 @@ function drawCenter(canvas) {
     ctx.stroke();
 }
 
+
 function draw_xy_axis(canvas)
 {
     var center_point= get_center_point(canvas);
@@ -51,6 +52,19 @@ function draw_xy_axis(canvas)
     ctx.stroke();
 }
 
+function aux_true_anomaly(p_m, e)
+{
+    var e_a = p_m;
+    for (var i=0;i<100;i++)
+    {
+        e_a = p_m + e*Math.sin(e_a);
+    }
+    
+    var nu = 2 * Math.atan(Math.sqrt((1 + e) / (1 - e)) * Math.tan(e_a/2))
+    return nu;
+}
+
+
 function draw_asteroid(canvas, asteroid, color)
 {
     var au=AU/scale_factor;
@@ -58,11 +72,14 @@ function draw_asteroid(canvas, asteroid, color)
     var semiMajorAxis = asteroid.semimajor_a*au;
     var argPeriapsis = asteroid.argument_perihelion;
     var angle = asteroid.argument_perihelion*(Math.PI/180);
-    drawOrbitEllipse(canvas, semiMajorAxis, argPeriapsis, eccentricity, color, true);
+    var time_periapsis = asteroid.tpa;
+    //var date_start = Date.now()
+    var true_anomaly = aux_true_anomaly(asteroid.mean_anomaly,eccentricity);
+    drawOrbitEllipse(canvas, semiMajorAxis, argPeriapsis, eccentricity, color, true_anomaly, true);
 
 }
 
-function drawOrbitEllipse(canvas, semiMajorAxis, argPeriapsis, eccentricity, p_color, is_asteroid=false)
+function drawOrbitEllipse(canvas, semiMajorAxis, argPeriapsis, eccentricity, p_color, true_anomaly=null, is_asteroid=false)
 {
     const selectElement = document.getElementById('view_type');
     const view_type = selectElement.value;
@@ -86,13 +103,16 @@ function drawOrbitEllipse(canvas, semiMajorAxis, argPeriapsis, eccentricity, p_c
 
     if (is_asteroid)
     {
-        if (view_type=="1")
-            ctx.ellipse(centerX, centerY, semiMajorAxis, semiMinorAxis, argPeriapsis, 0,2*Math.PI);
-        if (view_type=="2") 
+        switch (view_type)
         {
-            var start = Math.random()*2*Math.PI;
-            var stop = start+0.001;
+        case "1":
+            ctx.ellipse(centerX, centerY, semiMajorAxis, semiMinorAxis, argPeriapsis, 0,2*Math.PI);
+            break;
+        case "2": 
+            var start = true_anomaly-0.001;
+            var stop = true_anomaly;
             ctx.ellipse(centerX, centerY, semiMajorAxis, semiMinorAxis, argPeriapsis, start, stop);//0, 2 * Math.PI);
+            break;
         }
     }
     else
@@ -148,7 +168,6 @@ function render_page(reload)
         const xhttp = new XMLHttpRequest();
         xhttp.onload = function() {
             // What to do when the response is ready
-            console.log(this.responseText)
             data = JSON.parse(this.responseText);
             neos = data["pha"]
             mbas = data["mba"]
@@ -186,12 +205,10 @@ function init() {
     document.addEventListener('keydown', function(event) {
     switch(event.key) {
         case '+':
-            console.log('Plus key pressed');
             scale_factor = scale_factor/2;
             render_page(0);
             break;
         case '-':
-            console.log('Minus key pressed');
             scale_factor = scale_factor*2;
             render_page(0);
             break;
