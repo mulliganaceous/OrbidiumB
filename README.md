@@ -22,8 +22,7 @@ The project is in "works on my Macbook" state of maturity, report any bugs on Gi
   - Install dependencies using `pip install -r requirements.txt`
   - run migrations using `python manage.py migrate` command
   - populate the local db using `python manage.py process_mpc_file` command
-  - run locally via `python manage.py runserver 0.0.0.0:8000`
--
+  - run locally via `python manage.py runserver localhost:8000`
 
 ### Docker
 
